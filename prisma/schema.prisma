@@ -33,6 +33,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   events        Event[]
+  participations Participant[]
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -87,6 +88,32 @@ model Event {
   
   userId      String
   createdBy   User     @relation(fields: [userId], references: [id])
+
+  categoryId  String?   
+  category    Category? @relation(fields: [categoryId], references: [id])
   
+  participants Participant[]
   createdAt   DateTime @default(now())
+}
+
+model Participant {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  joinedAt  DateTime @default(now())
+
+  // İlişkiler
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+}
+
+model Category {
+  id    String  @id @default(cuid())
+  name  String  @unique // Örn: "Tohum Takası", "Hasat Şenliği"
+  icon  String? // Örn: "🌱", "🚜" (Görsellik için emoji tutalım)
+  
+  // İlişki: Bu kategorideki etkinlikler
+  events Event[]
 }

@@ -4,10 +4,12 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
+import { UserRole } from "@prisma/client"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" }, // Rol tabanlı sistemler için JWT en iyisidir
+  adapter: PrismaAdapter(prisma) as any, 
+  
+  session: { strategy: "jwt" },
   providers: [
     Credentials({
       name: "Credentials",
@@ -22,7 +24,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const email = credentials.email as string
         
-        // Kullanıcıyı veritabanında bul
         const user = await prisma.user.findUnique({
           where: { email },
         })
@@ -31,7 +32,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error("Kullanıcı bulunamadı!")
         }
 
-        // Şifreyi kontrol et
         const isMatch = await bcrypt.compare(
           credentials.password as string,
           user.password
@@ -41,24 +41,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error("Şifre hatalı!")
         }
 
-        // Giriş başarılı ise kullanıcıyı döndür
         return user
       },
     }),
   ],
   callbacks: {
-    // JWT Token'ına kullanıcının rolünü (Role) ekle
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role
-        token.id = user.id
+        token.role = user.role as UserRole
+        token.id = user.id as string 
       }
       return token
     },
-    // Oturum (Session) bilgisine de rolü ekle ki arayüzde kullanabilelim
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.role = token.role as string // "ADMIN", "USER" vb.
+        session.user.role = token.role as UserRole
         session.user.id = token.id as string
       }
       return session
