@@ -58,7 +58,7 @@ export default async function EventsPage({
       category: true,
     },
   });
-
+const isOrganizer = session?.user?.role === "ADMIN" || session?.user?.role === "ORGANIZER";
   return (
     <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
       {/* --- ÜST KISIM --- */}
@@ -71,7 +71,7 @@ export default async function EventsPage({
             </p>
           </div>
           
-          {session?.user && (
+          {isOrganizer && (
             <Link
               href="/events/create"
               className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md shadow-sm transition-colors whitespace-nowrap"
