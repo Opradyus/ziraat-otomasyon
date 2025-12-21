@@ -83,7 +83,12 @@ model Event {
   id          String   @id @default(cuid())
   title       String
   description String
-  location    String?
+  
+  // --- YENİ EKLENEN ALANLAR ---
+  city        String   @default("Belirtilmemiş") 
+  district    String   @default("Belirtilmemiş")
+  location    String
+  
   date        DateTime
   
   userId      String
@@ -93,7 +98,7 @@ model Event {
   category    Category? @relation(fields: [categoryId], references: [id])
   
   participants Participant[]
-  createdAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
 }
 
 model Participant {
