@@ -3,6 +3,7 @@
 
 import { createEvent } from "@/actions/create-event"
 import { useState } from "react"
+import { TURKEY_CITIES } from "@/constants/cities" // Yeni veri seti
 
 // Kategorileri dışarıdan (Server'dan) alacağız
 interface EventFormProps {
@@ -11,6 +12,13 @@ interface EventFormProps {
 
 export default function EventForm({ categories }: EventFormProps) {
   const [error, setError] = useState<string | null>(null)
+  const [selectedCityName, setSelectedCityName] = useState<string>("")
+
+  // YENİ MANTIK: Seçilen isme göre o şehrin OBJESİNİ buluyoruz
+  // Eğer şehir seçilmediyse boş dizi [] döner
+  const currentDistricts = selectedCityName 
+    ? TURKEY_CITIES.find(c => c.name === selectedCityName)?.counties || []
+    : [];
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -53,15 +61,61 @@ export default function EventForm({ categories }: EventFormProps) {
         <textarea name="description" rows={3} required className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        {/* İL SEÇİMİ */}
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Konum</label>
-            <input type="text" name="location" required className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+          <label className="block text-sm font-medium text-gray-700 mb-1">İl</label>
+          <select 
+            name="city" 
+            required 
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 capitalize"
+            value={selectedCityName}
+            onChange={(e) => setSelectedCityName(e.target.value)}
+          >
+            <option value="">İl Seçiniz...</option>
+            {TURKEY_CITIES.map((city) => (
+              <option key={city.plate} value={city.name}>
+                {city.name}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* İLÇE SEÇİMİ */}
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tarih</label>
-            <input type="datetime-local" name="date" required className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+          <label className="block text-sm font-medium text-gray-700 mb-1">İlçe</label>
+          <select 
+            name="district" 
+            required 
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 disabled:bg-gray-100 capitalize"
+            disabled={!selectedCityName}
+          >
+            <option value="">
+              {selectedCityName ? "İlçe Seçiniz..." : "Önce İl Seçiniz"}
+            </option>
+            {/* Bulduğumuz ilçeleri listeliyoruz */}
+            {currentDistricts.map((dist) => (
+              <option key={dist} value={dist}>{dist}</option>
+            ))}
+          </select>
         </div>
+      </div>
+
+          
+       <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Konum Detayı / Açık Adres</label>
+          <input type="text" name="location" required placeholder="Örn: Meydan, Saat Kulesi Önü" className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+      </div>
+
+      <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tarih</label>
+          <input type="datetime-local" name="date" required className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
+        <textarea name="description" rows={3} required className="w-full px-4 py-2 border border-gray-300 rounded-lg" />
       </div>
 
       <button type="submit" className="w-full py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700">
